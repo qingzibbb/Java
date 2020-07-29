@@ -1,6 +1,7 @@
 package servlet;
 
 import util.DBUtil;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -10,52 +11,42 @@ import java.io.IOException;
 import java.io.Writer;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
-@WebServlet("/register")
-public class RegisterServlet extends HttpServlet {
+
+@WebServlet("/delGoods")
+public class GoodsSoldOutServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        System.out.println("注册！");
-
         req.setCharacterEncoding("UTF-8");
         resp.setContentType("text/html; charset=utf-8");
-        String username = req.getParameter("username");
-        String password = req.getParameter("password");
-
-
-        Connection connection = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
 
         Writer writer = resp.getWriter();
+        String str = req.getParameter("id");
+        System.out.println(str);
 
+        Integer id = Integer.parseInt(str.trim());
+        System.out.println("id" + id);
+        Connection connection = null;
+        PreparedStatement ps = null;
 
         try {
-            String sql = "insert into account(username,password) values(?,?)";
+            String sql = "delete from goods where id=?";
             connection = DBUtil.getConnection(true);
             ps = connection.prepareStatement(sql);
-
-            ps.setString(1,username);
-            ps.setString(2,password);
+            ps.setInt(1,id);
 
             int ret = ps.executeUpdate();
-            if(ret==0){
-                System.out.println("注册失败！");
-                writer.write("<h2> 注册失败</h2>");
+            if(ret == 1) {
+                writer.write("<h2> 删除成功："+id+"</h2>");
             }else {
-                System.out.println("注册成功！");
-                writer.write("<h2> 注册成功</h2>");
-
-                resp.sendRedirect("login.html");//跳转到登录页面
-
+                writer.write("<h2> 下架失败："+id+"</h2>");
             }
-        } catch (SQLException e) {
+        }catch (SQLException e) {
             e.printStackTrace();
         }finally {
             DBUtil.close(connection,ps,null);
         }
-
     }
+
 }
